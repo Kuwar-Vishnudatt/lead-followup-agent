@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lead Follow-up Agent
 
-## Getting Started
+One screen that tells a sales rep who to follow up with today, and what to say.
 
-First, run the development server:
+Built for the FDE take-home assignment: a small packaging-equipment company
+with 5 reps, leads scattered across a spreadsheet and WhatsApp, and no clear
+view of who's hot, who's gone cold, and who needs a reply today.
+
+## What it does
+
+1. **Tags every lead** Hot / Warm / Cold with a one-line, specific reason
+   (e.g. *"Buyer asked for pricing 1 day ago"*, *"No reply in 9 days after
+   your last message"*).
+2. **Sets a next follow-up date** for each lead — either parsed from an
+   explicit date mentioned in the chat ("call me Monday") or from a
+   tag-based cadence (Hot = 1 day, Warm = 3 days, Cold = 7 days).
+3. **Drafts the next WhatsApp message** for each lead, tailored to the tag
+   and the specific signal that drove it (price objection, stalling, ready
+   to order, gone quiet, etc.).
+4. **Dashboard**: today's and overdue follow-ups sorted to the top,
+   overdue ones flagged in red, one click into any lead's full chat, tag,
+   reason and draft. A rep can edit the draft, mark it sent, log a new
+   WhatsApp message, or add a brand new lead — all of which re-run the
+   agent immediately.
+
+See [`NOTE.md`](./NOTE.md) for the full write-up: how the tagging logic
+works, what AI tools were used, and what's next.
+
+## Running locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Sample data (20 leads, 15 with WhatsApp-style
+chat history) seeds automatically into the browser's local storage on first
+load — no backend or database required.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS
+- No backend/database: the agent logic runs client-side and state persists
+  to `localStorage`, so the app deploys as a single static-friendly Next.js
+  app with zero external services to configure or that can go down during
+  review.
