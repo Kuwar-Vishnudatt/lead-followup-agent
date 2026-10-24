@@ -1,7 +1,7 @@
 "use client";
 
 import { Lead } from "@/lib/types";
-import { formatRelativeLabel, isOverdue, isToday } from "@/lib/dateUtils";
+import { formatRelativeLabel, isOverdue, isToday, toDateOnly } from "@/lib/dateUtils";
 import TagBadge from "./TagBadge";
 
 export default function LeadRow({
@@ -18,7 +18,7 @@ export default function LeadRow({
   const overdue = isOverdue(lead.nextFollowUpDate, now);
   const dueToday = isToday(lead.nextFollowUpDate, now);
   const label = formatRelativeLabel(lead.nextFollowUpDate, now);
-  const sentToday = lead.lastSentAt === now.toISOString().slice(0, 10);
+  const sentToday = lead.lastSentAt === toDateOnly(now);
 
   return (
     <button

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
-import { daysBetween, startOfDay } from "@/lib/dateUtils";
+import { daysBetween, parseDateOnly, startOfDay } from "@/lib/dateUtils";
 import { Lead, Tag } from "@/lib/types";
 import LeadRow from "./LeadRow";
 import LeadDetail from "./LeadDetail";
@@ -13,8 +13,8 @@ const TAG_ORDER: Record<Tag, number> = { Hot: 0, Warm: 1, Cold: 2 };
 
 function sortLeads(leads: Lead[], now: Date): Lead[] {
   return [...leads].sort((a, b) => {
-    const diffA = daysBetween(startOfDay(now), startOfDay(new Date(a.nextFollowUpDate)));
-    const diffB = daysBetween(startOfDay(now), startOfDay(new Date(b.nextFollowUpDate)));
+    const diffA = daysBetween(startOfDay(now), startOfDay(parseDateOnly(a.nextFollowUpDate)));
+    const diffB = daysBetween(startOfDay(now), startOfDay(parseDateOnly(b.nextFollowUpDate)));
     if (diffA !== diffB) return diffA - diffB;
     return TAG_ORDER[a.tag] - TAG_ORDER[b.tag];
   });
@@ -38,7 +38,7 @@ export default function Dashboard() {
     let today = 0;
     let hot = 0;
     for (const lead of leads) {
-      const diff = daysBetween(startOfDay(now), startOfDay(new Date(lead.nextFollowUpDate)));
+      const diff = daysBetween(startOfDay(now), startOfDay(parseDateOnly(lead.nextFollowUpDate)));
       if (diff < 0) overdue += 1;
       else if (diff === 0) today += 1;
       if (lead.tag === "Hot") hot += 1;
@@ -49,7 +49,7 @@ export default function Dashboard() {
   const filtered = useMemo(() => {
     if (!now) return [];
     return sorted.filter((lead) => {
-      const diff = daysBetween(startOfDay(now), startOfDay(new Date(lead.nextFollowUpDate)));
+      const diff = daysBetween(startOfDay(now), startOfDay(parseDateOnly(lead.nextFollowUpDate)));
       if (filter === "overdue") return diff < 0;
       if (filter === "today") return diff === 0;
       if (filter === "Hot" || filter === "Warm" || filter === "Cold") return lead.tag === filter;

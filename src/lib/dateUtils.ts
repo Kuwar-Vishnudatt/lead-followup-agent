@@ -9,12 +9,29 @@ const WEEKDAYS = [
   "saturday",
 ];
 
+// Date-only values are stored and compared in the viewer's local calendar,
+// never UTC — `toISOString()` shifts to UTC first, which silently rolls the
+// date backward for anyone east of Greenwich after their local midnight but
+// before UTC midnight (e.g. it's already "tomorrow" in India at 1am IST).
 export function toDateOnly(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Parse a "YYYY-MM-DD" value as local midnight (never via `new Date(str)`,
+ * which the spec parses as UTC midnight and would reintroduce the same
+ * UTC/local mismatch when compared against other local-time dates). */
+export function parseDateOnly(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 export function addDays(d: Date, days: number): Date {
-  return new Date(d.getTime() + days * DAY_MS);
+  const copy = new Date(d);
+  copy.setDate(copy.getDate() + days);
+  return copy;
 }
 
 export function daysBetween(a: Date, b: Date): number {
@@ -60,7 +77,7 @@ function nextWeekday(from: Date, targetDow: number): Date {
 }
 
 export function formatRelativeLabel(dateStr: string, now: Date): string {
-  const target = startOfDay(new Date(dateStr));
+  const target = startOfDay(parseDateOnly(dateStr));
   const today = startOfDay(now);
   const diff = daysBetween(today, target);
 
@@ -85,9 +102,9 @@ export function formatDateTime(dateStr: string): string {
 }
 
 export function isOverdue(dateStr: string, now: Date): boolean {
-  return daysBetween(startOfDay(now), startOfDay(new Date(dateStr))) < 0;
+  return daysBetween(startOfDay(now), startOfDay(parseDateOnly(dateStr))) < 0;
 }
 
 export function isToday(dateStr: string, now: Date): boolean {
-  return daysBetween(startOfDay(now), startOfDay(new Date(dateStr))) === 0;
+  return daysBetween(startOfDay(now), startOfDay(parseDateOnly(dateStr))) === 0;
 }
