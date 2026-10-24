@@ -207,10 +207,18 @@ function pickReason(tag: Tag, factors: Factor[], firstName: string): string {
   return `${firstName} is engaged but hasn't given a clear signal either way.`;
 }
 
+// A date word only counts as a follow-up instruction if it's attached to a
+// scheduling cue ("call Monday", "let's talk next week"). Without this gate,
+// something like "we need this by next week" (a delivery deadline) would get
+// misread as "don't follow up until next week" — exactly backwards for a
+// lead that just said it's urgent.
+const SCHEDULING_CUE = /\b(call|talk|connect|touch base|check in|circle back|follow up|catch up|speak|ring|chat|discuss|demo)\b/i;
+
 function computeNextFollowUp(tag: Tag, chat: ChatMessage[]): string {
-  // Look for an explicit date mentioned in the most recent couple of messages.
+  // Look for an explicit scheduling date mentioned in the most recent couple of messages.
   const recent = chat.slice(-2);
   for (let i = recent.length - 1; i >= 0; i--) {
+    if (!SCHEDULING_CUE.test(recent[i].text)) continue;
     const hint = extractDateHint(recent[i].text, new Date(recent[i].date));
     if (hint) return toDateOnly(hint);
   }
