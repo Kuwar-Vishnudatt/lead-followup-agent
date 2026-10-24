@@ -130,10 +130,3 @@ export function markSent(leadId: string) {
     })
   );
 }
-
-export function resetDemoData() {
-  const seeded = generateSampleLeads(new Date());
-  cache = seeded;
-  persist(seeded);
-  listeners.forEach((l) => l());
-}

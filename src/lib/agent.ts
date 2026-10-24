@@ -32,6 +32,7 @@ const POSITIVE_PHRASES: { phrase: string; weight: number; label: string }[] = [
   { phrase: "price list", weight: 22, label: "Buyer asked for pricing" },
   { phrase: "how much", weight: 22, label: "Buyer asked how much it costs" },
   { phrase: "schedule a call", weight: 24, label: "Buyer wants to schedule a call" },
+  { phrase: "let's do a call", weight: 24, label: "Buyer agreed to a call" },
   { phrase: "book a demo", weight: 26, label: "Buyer wants to book a demo" },
   { phrase: "need this urgently", weight: 30, label: "Buyer needs this urgently" },
   { phrase: "sounds good", weight: 18, label: "Buyer responded positively" },
@@ -191,11 +192,17 @@ function pickReason(tag: Tag, factors: Factor[], firstName: string): string {
     return `${firstName} is actively engaged and responding quickly.`;
   }
   if (tag === "Cold") {
-    const worst = factors
+    // Prefer an explicit objection, then stalling language, and only fall
+    // back to "time since last contact" when nothing more specific was
+    // said — a neutral/zero-weight recency entry is never informative
+    // enough to explain why a lead went cold on its own.
+    const objection = factors
       .filter((f) => f.kind === "negative" || f.kind === "ghost")
       .sort((a, b) => a.weight - b.weight)[0];
-    if (worst) return `${worst.text}.`;
-    const recency = factors.find((f) => f.kind === "recency");
+    if (objection) return `${objection.text}.`;
+    const stall = factors.filter((f) => f.kind === "stall").sort((a, b) => a.weight - b.weight)[0];
+    if (stall) return `${stall.text}, and still no clear commitment — lead is cooling.`;
+    const recency = factors.find((f) => f.kind === "recency" && f.weight < 0);
     if (recency) return `${recency.text} — lead is going cold.`;
     return `${firstName} has gone quiet with no clear interest.`;
   }
@@ -247,6 +254,9 @@ function draftFor(
     }
     if (hasPositive("quote") || hasPositive("pricing")) {
       return `Hi ${firstName}, thanks for your interest in the ${product} — I'll have a formal quote over to you today. Would a quick call this afternoon work to confirm quantities and delivery timeline?`;
+    }
+    if (hasPositive("agreed to a call")) {
+      return `Hi ${firstName}, looking forward to our call on the ${product} — I'll have everything ready to walk through. Let me know if the timing still works or if anything's changed.`;
     }
     return `Hi ${firstName}, following up on the ${product} — sounds like the timing is right. Want to jump on a quick call today to finalize the details?`;
   }

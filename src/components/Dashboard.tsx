@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
+import { useNow } from "@/lib/useNow";
 import { daysBetween, startOfDay } from "@/lib/dateUtils";
 import { Lead, Tag } from "@/lib/types";
 import LeadRow from "./LeadRow";
@@ -27,10 +28,7 @@ export default function Dashboard() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
 
-  // `new Date()` must not run during server prerendering, so the current
-  // time is only known once this effect runs on the client.
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => setNow(new Date()), []);
+  const now = useNow();
 
   const sorted = useMemo(() => (now ? sortLeads(leads, now) : []), [leads, now]);
 

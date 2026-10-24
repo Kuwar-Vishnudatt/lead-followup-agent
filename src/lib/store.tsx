@@ -18,6 +18,5 @@ export function useStore() {
     addMessage: leadsStore.addMessage,
     updateDraft: leadsStore.updateDraft,
     markSent: leadsStore.markSent,
-    resetDemoData: leadsStore.resetDemoData,
   };
 }
